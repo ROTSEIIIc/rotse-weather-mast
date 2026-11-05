@@ -1,0 +1,41 @@
+# rotse-weather-mast configuration. Every key is optional: defaults are shown.
+# On the Pi: /etc/rotse-weather-mast/config.yaml. Env overrides: MAST_<KEY>, MAST_<SECTION>__<KEY>.
+
+station: weather-mast
+i2c_bus: 1                    # /dev/i2c-1 = header pins 3 (SDA) / 5 (SCL)
+poll_interval_s: 10
+read_timeout_s: 5
+max_age_s: 60                 # older readings count as not ok -> 503 for pyobs-weather
+
+sensors:                      # name -> driver. The name is what appears in the API.
+  sht45:
+    type: sht45               # sht45 | bme280 | sim_sht45 | sim_bme280
+    address: 0x44
+  bme280:
+    type: bme280
+    address: 0x76             # 0x77 on Adafruit boards; check with `i2cdetect -y 1`
+
+heater:                       # SHT45 built-in heater, drives off condensation
+  enabled: true
+  rh_threshold_pct: 95
+  hold_s: 600                 # RH must stay >= threshold this long before a pulse
+  power: medium               # low 20 mW | medium 110 mW | high 200 mW
+  pulse_s: 1.0                # 0.1 or 1.0
+
+pyobs_weather:
+  # GET /api/v1/pyobs-weather/<sensor> (one pyobs-weather station per sensor).
+  # Sensor field -> JSON key; fields not listed are left out.
+  field_codes:
+    temp_c: temp
+    rh_pct: humid
+    dewpoint_c: dewpoint
+    pressure_hpa: press
+
+api:
+  host: 0.0.0.0
+  port: 8082                  # 8081 = Boltwood service; indi-allsky's web UI uses 80/443
+
+sim:                          # only used with --sim
+  seed: 0
+  dropout_prob: 0.0           # chance a simulated read fails, to test error handling
+  lon: 16.50

@@ -1,0 +1,37 @@
+# /etc/systemd/system/rotse-weather-mast.service
+#
+#   sudo cp deploy/rotse-weather-mast.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now rotse-weather-mast
+#   journalctl -u rotse-weather-mast -f
+#
+# The app sends READY=1 once the poll loop runs, then WATCHDOG=1 only while the loop's
+# heartbeat is fresh, so a hung loop (e.g. a wedged I2C bus) gets the service restarted.
+
+[Unit]
+Description=rotse-weather-mast (SHT45 + BME280 over I2C, JSON for pyobs-weather on :8082)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=weather
+Group=weather
+SupplementaryGroups=i2c
+WorkingDirectory=/opt/rotse-weather-mast
+ExecStart=/opt/rotse-weather-mast/.venv/bin/rotse-weather-mast --config /etc/rotse-weather-mast/config.yaml
+Environment=PYTHONUNBUFFERED=1
+
+Restart=always
+RestartSec=10
+TimeoutStartSec=60
+WatchdogSec=120
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
