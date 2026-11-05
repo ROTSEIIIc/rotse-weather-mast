@@ -1,5 +1,7 @@
 # rotse-weather-mast
 
+<https://github.com/ROTSEIIIc/rotse-weather-mast>
+
 Service for the **weather mast Pi 5** at ROTSE-IIIc (H.E.S.S. site). It reads an **SHT45**
 (T/RH) and a **BME280** (T/RH/pressure) over I²C, keeps the latest values in memory, and
 serves them as JSON for the observatory server's **pyobs-weather** to poll. No UI and no
@@ -114,8 +116,8 @@ sudo raspi-config nonint do_i2c 0           # enable I2C (or dtparam=i2c_arm=on)
 i2cdetect -y 1                              # expect 44 and 76/77
 
 sudo useradd --system --groups i2c --home /opt/rotse-weather-mast weather
-sudo git clone https://github.com/<you>/rotse-weather-mast /opt/rotse-weather-mast   # or a tag
-cd /opt/rotse-weather-mast && sudo uv sync --no-dev
+sudo git clone --branch v0.1.0 https://github.com/ROTSEIIIc/rotse-weather-mast.git /opt/rotse-weather-mast
+cd /opt/rotse-weather-mast && sudo uv sync --locked --no-dev
 sudo chown -R weather: /opt/rotse-weather-mast
 
 sudo install -D -m 644 config.example.yaml /etc/rotse-weather-mast/config.yaml       # then edit
@@ -123,6 +125,16 @@ sudo cp deploy/rotse-weather-mast.service /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now rotse-weather-mast
 journalctl -u rotse-weather-mast -f
 curl -s localhost:8082/api/v1/sensors | python3 -m json.tool
+```
+
+Deploy from a tag so you always know what's on the mast. To update, or roll back to an
+older tag:
+
+```bash
+cd /opt/rotse-weather-mast
+sudo -u weather git fetch --tags && sudo -u weather git checkout v0.2.0
+sudo -u weather uv sync --locked --no-dev
+sudo systemctl restart rotse-weather-mast
 ```
 
 ## Adding a sensor

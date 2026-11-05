@@ -17,6 +17,9 @@ dependencies = [
     "RPi.bme280>=0.2.4",
 ]
 
+[project.urls]
+Repository = "https://github.com/ROTSEIIIc/rotse-weather-mast"
+
 [project.scripts]
 rotse-weather-mast = "rotse_weather_mast.main:main"
 
